@@ -188,25 +188,52 @@ For Glue catalog integration and Athena queries:
 
 This creates the `s3tablescatalog` in Glue Data Catalog.
 
-#### 3c. Configure Lake Formation Permissions
+#### 3c. Configure IAM Permissions
 
-Grant permissions for your IAM user/role:
+For production deployments, use the IAM policy template provided in `icelake-etl-least-privilege.template.json` as a starting point and narrow down the access per your requirements.
+
+**Step 1: Create the policy from template**
 
 ```bash
-# Grant database creation permission
-aws lakeformation grant-permissions \
-  --principal DataLakePrincipalIdentifier=arn:aws:iam::123456789012:role/your-role \
-  --permissions CREATE_DATABASE \
-  --resource '{"Catalog":{}}' \
-  --region us-east-2
+# Replace placeholders with your values
+sed -e "s/\${AWS_ACCOUNT_ID}/123456789012/g" \
+    -e "s/\${AWS_REGION}/us-east-2/g" \
+    -e "s/\${HOURLY_TABLE_DATABASE}/icelake_hourly_db/g" \
+    -e "s/\${S3_TABLES_BUCKET_NAME}/your-s3-tables-bucket/g" \
+    -e "s/\${S3_BUCKET_HOURLY}/your-bucket-hourly/g" \
+    icelake-etl-least-privilege.template.json > icelake-etl-policy.json
 
-# Grant permissions on the database
-aws lakeformation grant-permissions \
-  --principal DataLakePrincipalIdentifier=arn:aws:iam::123456789012:role/your-role \
-  --permissions ALL \
-  --resource '{"Database":{"CatalogId":"s3tablescatalog","Name":"icelake_hourly_db"}}' \
-  --region us-east-2
+# Create IAM policy
+aws iam create-policy \
+  --policy-name icelake-etl-least-privilege \
+  --policy-document file://icelake-etl-policy.json \
+  --description "Least privilege policy for icelake ETL operations" \
+  --profile your-profile
+
+# Attach to IAM user
+aws iam attach-user-policy \
+  --user-name your-etl-user \
+  --policy-arn arn:aws:iam::123456789012:policy/icelake-etl-least-privilege \
+  --profile your-profile
 ```
+
+**What this policy grants:**
+- ✅ Glue catalog access (GetCatalog, GetDatabase, GetTable, CreateTable, UpdateTable)
+- ✅ S3 Tables operations (GetTable, CreateTable, PutTableData)
+- ✅ S3 read/write access to specific hourly bucket only
+- ✅ Lake Formation GetDataAccess for temporary credentials
+- ❌ No access to other S3 buckets
+- ❌ No ability to delete databases or grant permissions
+- ❌ No administrative privileges
+
+For detailed permissions breakdown, see `docs/LEAST_PRIVILEGE_ICELAKE_ETL.md`.
+
+#### 3d. Configure Lake Formation Permissions
+
+Grant Lake Formation permissions for your IAM user/role:
+
+Use AWS Lakeformation console or CLI commands to grant access to the Lakeformation catalog and table(s).
+
 
 ### 4. Verify Connectivity
 

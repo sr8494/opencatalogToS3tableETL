@@ -1,0 +1,74 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "GlueReadWriteSpecificDatabase",
+      "Effect": "Allow",
+      "Action": [
+        "glue:GetCatalog",
+        "glue:GetDatabase",
+        "glue:GetTable",
+        "glue:GetTableVersion",
+        "glue:GetTableVersions",
+        "glue:CreateTable",
+        "glue:UpdateTable",
+        "glue:BatchGetPartition",
+        "glue:GetPartition",
+        "glue:GetPartitions",
+        "glue:CreatePartition",
+        "glue:BatchCreatePartition",
+        "glue:UpdatePartition"
+      ],
+      "Resource": [
+        "arn:aws:glue:${AWS_REGION}:${AWS_ACCOUNT_ID}:catalog",
+        "arn:aws:glue:${AWS_REGION}:${AWS_ACCOUNT_ID}:catalog/*",
+        "arn:aws:glue:${AWS_REGION}:${AWS_ACCOUNT_ID}:database/${HOURLY_TABLE_DATABASE}",
+        "arn:aws:glue:${AWS_REGION}:${AWS_ACCOUNT_ID}:database/s3tablescatalog/${S3_TABLES_BUCKET_NAME}/*",
+        "arn:aws:glue:${AWS_REGION}:${AWS_ACCOUNT_ID}:table/${HOURLY_TABLE_DATABASE}/*",
+        "arn:aws:glue:${AWS_REGION}:${AWS_ACCOUNT_ID}:table/s3tablescatalog/${S3_TABLES_BUCKET_NAME}/*/*"
+      ]
+    },
+    {
+      "Sid": "S3TablesReadWriteSpecificBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3tables:GetTableBucket",
+        "s3tables:GetNamespace",
+        "s3tables:GetTable",
+        "s3tables:GetTableMetadataLocation",
+        "s3tables:CreateTable",
+        "s3tables:UpdateTableMetadataLocation",
+        "s3tables:PutTableData",
+        "s3tables:GetTableMaintenanceConfiguration"
+      ],
+      "Resource": [
+        "arn:aws:s3tables:${AWS_REGION}:${AWS_ACCOUNT_ID}:bucket/${S3_TABLES_BUCKET_NAME}",
+        "arn:aws:s3tables:${AWS_REGION}:${AWS_ACCOUNT_ID}:bucket/${S3_TABLES_BUCKET_NAME}/namespace/${HOURLY_TABLE_DATABASE}",
+        "arn:aws:s3tables:${AWS_REGION}:${AWS_ACCOUNT_ID}:bucket/${S3_TABLES_BUCKET_NAME}/namespace/${HOURLY_TABLE_DATABASE}/table/*"
+      ]
+    },
+    {
+      "Sid": "S3ReadWriteHourlyBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": [
+        "arn:aws:s3:::${S3_BUCKET_HOURLY}",
+        "arn:aws:s3:::${S3_BUCKET_HOURLY}/*"
+      ]
+    },
+    {
+      "Sid": "LakeFormationGetDataAccess",
+      "Effect": "Allow",
+      "Action": [
+        "lakeformation:GetDataAccess"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -6,6 +6,11 @@
 *.key
 *.crt
 
+# IAM Policy files with credentials
+icelake-etl-least-privilege.json
+icelake-etl-policy.json
+!icelake-etl-least-privilege.template.json
+
 # Python
 venv/
 env/
